@@ -6,6 +6,8 @@ Commands:
 
 `!listplayers` Runs the RCON command `listplayers` on the game server. Returns a list of currently online players.
 
+`!listlastplayers` Uses the RCON SQL command to fetch character name, clan, level and last online date of the 10 players that were last active on the server.
+
 ## Usage
 
 Requires https://sourceforge.net/projects/mcrcon/ in `/usr/bin/`

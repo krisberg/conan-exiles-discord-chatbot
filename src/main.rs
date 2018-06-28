@@ -94,7 +94,13 @@ fn list_online_players() -> String {
 }
 
 fn get_player_list_from_db(limit: u32) -> String {
-    return rcon(&format!("sql SELECT char_name, level, guilds.name, lastTimeOnline FROM characters INNER JOIN guilds ON characters.guild = guilds.guildId ORDER BY lastTimeOnline DESC LIMIT {}", limit.to_string()));
+    return rcon(&format!(
+        "sql SELECT char_name, level, guilds.name, lastTimeOnline \
+        FROM characters \
+        INNER JOIN guilds ON characters.guild = guilds.guildId \
+        ORDER BY lastTimeOnline DESC \
+        LIMIT {}", limit.to_string())
+    );
 }
 
 fn list_players_as_csv(players: Vec<Player>) -> String {
@@ -110,7 +116,9 @@ fn list_players_as_csv(players: Vec<Player>) -> String {
 fn parse_player_list_sql_result(sql_result: String) -> Vec<Player> {
     let mut players: Vec<Player> = Vec::new();
 
-    let re = Regex::new(r"#\d*\s*([A-Za-z\s\d?_]*) \| \s*([\d]*) \| \s*([A-Za-z\s\d?_]*) \|\s*([\d]*)").unwrap();
+    let re = Regex::new(
+        r"#\d*\s*([A-Za-z\s\d?_]*) \| \s*([\d]*) \| \s*([A-Za-z\s\d?_]*) \|\s*([\d]*)"
+    ).unwrap();
 
     for cap in re.captures_iter(&sql_result) {
         let d = UNIX_EPOCH + Duration::from_secs(cap[4].parse::<u64>().unwrap());
@@ -151,7 +159,9 @@ fn get_server_report() -> String {
 fn get_server_status() -> String {
     let report = get_server_report();
 
-    let re = Regex::new(r"players=([0-9]*)...*uptime=([0-9]*)...*cpu_time=([0-9]*.[0-9]*)").unwrap();
+    let re = Regex::new(
+        r"players=([0-9]*)...*uptime=([0-9]*)...*cpu_time=([0-9]*.[0-9]*)"
+    ).unwrap();
     let caps = re.captures(&report).unwrap();
 
     return format!("Server Report:\n Players: {} \n Uptime: {} \n CPU Usage: {}%",
@@ -176,10 +186,14 @@ fn seconds_to_string(seconds_string: String) -> String {
 fn main() {
     // Log in to Discord using a bot token from the environment
     let discord = Discord::from_bot_token(
-        &env::var("DISCORD_TOKEN").expect("Expected DISCORD_TOKEN environment variable"),
+        &env::var("DISCORD_TOKEN")
+            .expect("Expected DISCORD_TOKEN environment variable"),
     ).expect("login failed");
 
-    let _conan_dir = &env::var("CONAN_DIR").expect("Expected CONAN_DIR environment variable");
+    let _rcon_password = &env::var("RCON_PASSWORD")
+        .expect("Expected RCON_PASSWORD environment variable");
+    let _conan_dir = &env::var("CONAN_DIR")
+        .expect("Expected CONAN_DIR environment variable");
 
     // Establish and use a websocket connection
     let (mut connection, _) = discord.connect().expect("connect failed");
