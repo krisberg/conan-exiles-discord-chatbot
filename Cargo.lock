@@ -63,7 +63,7 @@ dependencies = [
 
 [[package]]
 name = "conan-exiles-discord-chatbot"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "chrono 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "discord 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",

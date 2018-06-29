@@ -1,6 +1,6 @@
 [package]
 name = "conan-exiles-discord-chatbot"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Kristoffer Strøm Bergset <kristoffer@bergset.no>"]
 
 [dependencies]
