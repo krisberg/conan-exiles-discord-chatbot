@@ -10,8 +10,6 @@ Commands:
 
 ## Usage
 
-Requires https://sourceforge.net/projects/mcrcon/ in `/usr/bin/`
-
 Set these environment variables:
 
 `DISCORD_TOKEN` Discord app bot user token. Generate one [here](https://discordapp.com/developers/applications/me).

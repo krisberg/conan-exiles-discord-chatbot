@@ -3,6 +3,7 @@ extern crate regex;
 extern crate rev_lines;
 extern crate chrono;
 extern crate prettytable;
+extern crate rcon;
 
 use discord::Discord;
 use discord::model::Event;
@@ -11,7 +12,6 @@ use regex::Regex;
 use rev_lines::RevLines;
 use std::io::BufReader;
 use std::fs::File;
-use std::process::Command;
 use chrono::prelude::DateTime;
 use chrono::{Utc};
 use std::time::{UNIX_EPOCH, Duration};
@@ -64,22 +64,31 @@ fn handle_message(discord: &Discord, message: &discord::model::Message) {
 }
 
 fn rcon(command: &str) -> String {
-    let output = Command::new("mcrcon")
-        .arg("-c")
-        .arg("-H")
-        .arg("127.0.0.1")
-        .arg("-P")
-        .arg("25575")
-        .arg("-p")
-        .arg(&env::var("RCON_PASSWORD").expect("Expected RCON_PASSWORD environment variable"))
-        .arg(command)
-        .output()
-        .expect("failed to execute process");
+    let mut conn = match rcon::Connection::connect("localhost:25575",
+         &env::var("RCON_PASSWORD").expect("Expected RCON_PASSWORD environment variable")
+    ) {
+        Err(e) => {
+            println!("Got error: {}", e);
+            return "".to_string();
+        },
+        Ok(conn) => conn,
+    };
 
-    return String::from_utf8_lossy(&output.stdout).to_string();
+    let result = match conn.cmd(command) {
+        Err(e) => {
+            println!("Got error: {}", e);
+            return "".to_string();
+        },
+        Ok(result) => result,
+    };
+
+    return result;
 }
 
 fn list_online_players() -> String {
+    let rcon_result = rcon("listplayers");
+    if rcon_result == "" { return "RCON Error".to_string() }
+
     let mut players_string: String = "Currently online players:".to_string();
 
     let re = Regex::new(r" \s*\d* \| ([a-zA-Z\s]*) \| ([a-zA-Z\s]*) \| ([\d]*)").unwrap();
@@ -92,13 +101,17 @@ fn list_online_players() -> String {
 }
 
 fn get_player_list_from_db(limit: u32) -> String {
-    return rcon(&format!(
+    let rcon_result = rcon(&format!(
         "sql SELECT char_name, level, guilds.name, lastTimeOnline \
         FROM characters \
         INNER JOIN guilds ON characters.guild = guilds.guildId \
         ORDER BY lastTimeOnline DESC \
         LIMIT {}", limit.to_string())
     );
+
+    if rcon_result == "" { return "RCON Error".to_string() }
+
+    return rcon_result;
 }
 
 fn list_players_as_csv(players: Vec<Player>) -> String {

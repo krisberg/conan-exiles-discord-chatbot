@@ -8,6 +8,7 @@ regex = "1.0.0"
 rev_lines = "0.2.1"
 chrono = "0.4.2"
 prettytable-rs = "^0.6"
+rcon = "0"
 
 [dependencies.discord]
 version = "0.8.0"
