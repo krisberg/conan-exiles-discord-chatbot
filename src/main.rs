@@ -25,8 +25,6 @@ struct Player {
 }
 
 fn handle_message(discord: &Discord, message: &discord::model::Message) {
-    println!("{} says: {}", message.author.name, message.content);
-
     let mut responses: Vec<String> = Vec::new();
 
     match message.content.as_ref() {
@@ -137,11 +135,26 @@ fn parse_player_list_sql_result(sql_result: String) -> Vec<Player> {
 }
 
 fn read_log(contains: &str) -> String {
-    let file = File::open(
-        format!(
-            "{}/ConanSandbox/Saved/Logs/ConanSandbox.log",
-            &env::var("CONAN_DIR").expect("Expected CONAN_DIR environment variable"),
-        )).unwrap();
+    let logfile = format!("{}/Logs/ConanSandbox.log",
+              &env::var("SAVED_DIR").expect("Expected SAVED_DIR environment variable"));
+
+    let file = match File::open(logfile) {
+        Err(e) => {
+            use std::io::ErrorKind::*;
+            println!("Got error: {}", e);
+            match e.kind() {
+                NotFound => {
+                    println!("File not found");
+                }
+                k => {
+                    println!("Error: {:?}", k);
+                }
+            }
+            return "".to_string();
+        },
+        Ok(file) => file,
+    };
+
     let rev_lines = RevLines::new(BufReader::new(file)).unwrap();
 
     for line in rev_lines {
@@ -158,6 +171,8 @@ fn get_server_report() -> String {
 
 fn get_server_status() -> String {
     let report = get_server_report();
+
+    if report == "" { return "Error getting server status".to_string() };
 
     let re = Regex::new(
         r"players=([0-9]*)...*uptime=([0-9]*)...*cpu_time=([0-9]*.[0-9]*)"
@@ -178,9 +193,21 @@ fn seconds_to_string(seconds_string: String) -> String {
     let days = (seconds / 60 / 60) / 24;
     let seconds = seconds % 60;
 
-    return format!("Days: {} Hours: {} Minutes: {} Seconds: {}",
-                   &days, &hours, &minutes, &seconds
-    );
+    let mut date_string: String = "".to_string();
+    if days > 0 {
+        date_string += &format!("{} days ", &days);
+    }
+    if hours > 0 {
+        date_string += &format!("{} hours ", &hours);
+    }
+    if minutes > 0 {
+        date_string += &format!("{} minutes ", &minutes);
+    }
+    if seconds > 0 {
+        date_string += &format!("{} seconds ", &seconds);
+    }
+
+    return date_string;
 }
 
 fn main() {
@@ -192,8 +219,8 @@ fn main() {
 
     let _rcon_password = &env::var("RCON_PASSWORD")
         .expect("Expected RCON_PASSWORD environment variable");
-    let _conan_dir = &env::var("CONAN_DIR")
-        .expect("Expected CONAN_DIR environment variable");
+    let _saved_dir = &env::var("SAVED_DIR")
+        .expect("Expected SAVED_DIR environment variable");
 
     // Establish and use a websocket connection
     let (mut connection, _) = discord.connect().expect("connect failed");

@@ -14,8 +14,8 @@ Requires https://sourceforge.net/projects/mcrcon/ in `/usr/bin/`
 
 Set these environment variables:
 
-`DISCORD_TOKEN` Discord app bot user token
+`DISCORD_TOKEN` Discord app bot user token. Generate one [here](https://discordapp.com/developers/applications/me).
 
-`CONAN_DIR` Path to Conan Exiles dedicated server root directory.
+`SAVED_DIR` Path to Conan Exiles dedicated server saved directory. Ex `/path/to/ConanSandbox/Saved`
 
-`RCON_PASSWORD` Password for server Conan Exiles dedicated server RCON.
+`RCON_PASSWORD` Password for Conan Exiles dedicated server RCON.
